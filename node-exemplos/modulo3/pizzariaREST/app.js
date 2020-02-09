@@ -19,11 +19,21 @@ function auth(req, res, next) {
     err.status = 401
     return next(err)
   }
+
+  if (req.signedCookies.user) {
+    if (req.signedCookies.user != 'admin') unauthorized()
+    next()
+  }
+
   const header = req.headers.authorization
+
   if (!header) return unauthorized()
+
   const credentials = Buffer.from(header.split(' ')[1], 'base64')
   const [username, password] = credentials.toString().split(':')
+
   if (username != 'admin' || password != 'admin') return unauthorized()
+  res.cookie('user', 'admin', { signed: true })
   next()
 }
 
@@ -36,7 +46,7 @@ app.set('view engine', 'ejs')
 app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use(cookieParser())
+app.use(cookieParser("teste123"))
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', indexRouter)

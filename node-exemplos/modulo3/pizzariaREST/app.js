@@ -1,5 +1,6 @@
 const path = require('path')
 const express = require('express')
+const passport = require('passport')
 
 const createError = require('http-errors')
 const cookieParser = require('cookie-parser')
@@ -13,19 +14,6 @@ const usersRouter = require('./routes/users')
 const pizzasRouter = require('./routes/pizzas')
 // const promosRouter = require('./routes/promos')
 // const combosRouter = require('./routes/combos')
-
-function auth(req, res, next) {
-  function unauthorized() {
-    const err = new Error('Não autorizado')
-    res.setHeader('WWW-Authenticate', 'Basic')
-    err.status = 401
-    return next(err)
-  }
-
-  if (!req.session.user) unauthorized()
-
-  next()  
-}
 
 const app = express()
 
@@ -49,7 +37,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use('/', indexRouter)
 app.use('/users', usersRouter)
 
-app.use(auth)
+app.use(passport.initialize())
 
 app.use('/pizzas', pizzasRouter)
 // app.use('/promos', promoRouter)

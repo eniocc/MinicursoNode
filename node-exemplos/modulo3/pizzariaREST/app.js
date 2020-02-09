@@ -12,6 +12,21 @@ const pizzasRouter = require('./routes/pizzas')
 // const promosRouter = require('./routes/promos')
 // const combosRouter = require('./routes/combos')
 
+function auth(req, res, next) {
+  function unauthorized() {
+    const err = new Error('Não autorizado')
+    res.setHeader('WWW-Authenticate', 'Basic')
+    err.status = 401
+    return next(err)
+  }
+  const header = req.headers.authorization
+  if (!header) return unauthorized()
+  const credentials = Buffer.from(header.split(' ')[1], 'base64')
+  const [username, password] = credentials.toString().split(':')
+  if (username != 'admin' || password != 'admin') return unauthorized()
+  next()
+}
+
 const app = express()
 
 // view engine setup
@@ -26,6 +41,8 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', indexRouter)
 app.use('/users', usersRouter)
+
+app.use(auth)
 
 app.use('/pizzas', pizzasRouter)
 // app.use('/promos', promoRouter)

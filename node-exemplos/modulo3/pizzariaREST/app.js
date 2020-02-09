@@ -4,6 +4,8 @@ const express = require('express')
 const createError = require('http-errors')
 const cookieParser = require('cookie-parser')
 const logger = require('morgan')
+const session = require('express-session')
+const FileStore = require('session-file-store')(session)
 
 const indexRouter = require('./routes/index')
 const usersRouter = require('./routes/users')
@@ -20,8 +22,8 @@ function auth(req, res, next) {
     return next(err)
   }
 
-  if (req.signedCookies.user) {
-    if (req.signedCookies.user != 'admin') unauthorized()
+  if (req.session.user) {
+    if (req.session.user != 'admin') unauthorized()
     next()
   }
 
@@ -47,6 +49,13 @@ app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser("teste123"))
+app.use(session({
+  name: 'session-id',
+  secret: '12345-67890-09876-54321',
+  saveUninitialized: false,
+  resave: false,
+  store: new FileStore()
+}))
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.use('/', indexRouter)
